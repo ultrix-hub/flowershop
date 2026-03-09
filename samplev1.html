@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>花屋さん出品管理デモ | samplev1</title>
+  <style>
+    :root {
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --ink: #1f2430;
+      --sub: #6b7280;
+      --line: #e8eaf2;
+      --primary: #7c3aed;
+      --primary-soft: #efe7ff;
+      --ok: #16a34a;
+      --warn: #f59e0b;
+      --info: #0ea5e9;
+      --danger: #ef4444;
+      --shadow: 0 10px 28px rgba(26, 23, 61, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background:
+        radial-gradient(1200px 800px at 10% -10%, #f0ebff 0%, transparent 65%),
+        radial-gradient(1000px 700px at 95% 0%, #e9f7ff 0%, transparent 65%),
+        var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 28px;
+    }
+
+    .app {
+      max-width: 1220px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+
+    .hero {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: 1.55rem;
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--sub);
+      line-height: 1.6;
+      font-size: 0.96rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(99, 51, 180, 0.32);
+    }
+
+    .btn-ghost {
+      background: #f4f3ff;
+      color: #4c1d95;
+      border: 1px solid #e8e3ff;
+    }
+
+    .btn-neutral {
+      background: #f8fafc;
+      color: #1e293b;
+      border: 1px solid #e7ecf3;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .status-line {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--sub);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      border: 1px solid;
+      gap: 6px;
+    }
+
+    .chip.ok {
+      color: #166534;
+      background: #ecfdf3;
+      border-color: #bbf7d0;
+    }
+
+    .chip.warn {
+      color: #92400e;
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .chip.info {
+      color: #075985;
+      background: #e0f2fe;
+      border-color: #bae6fd;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: linear-gradient(180deg, #fff, #fcfcff);
+    }
+
+    .metric .label {
+      font-size: 0.8rem;
+      color: var(--sub);
+      margin-bottom: 8px;
+    }
+
+    .metric .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .metric .delta {
+      margin-top: 8px;
+      font-size: 0.82rem;
+    }
+
+    .delta.up {
+      color: var(--ok);
+    }
+
+    .delta.flat {
+      color: var(--info);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px 0;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .section-note {
+      margin: 4px 0 0;
+      font-size: 0.84rem;
+      color: var(--sub);
+    }
+
+    .table-wrap {
+      padding: 12px 16px 16px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      white-space: nowrap;
+    }
+
+    th {
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.82rem;
+      background: #fafbff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .badge {
+      font-size: 0.77rem;
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid transparent;
+      display: inline-block;
+    }
+
+    .badge.site-yahoo {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
+    .badge.site-mercari {
+      background: #f0fdfa;
+      color: #115e59;
+      border-color: #99f6e4;
+    }
+
+    .badge.site-rakuma {
+      background: #eef2ff;
+      color: #3730a3;
+      border-color: #c7d2fe;
+    }
+
+    .stock-low {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .stock-ok {
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    .side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .chart-card {
+      padding: 12px 14px 16px;
+    }
+
+    .bars {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 88px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .bar-track {
+      height: 10px;
+      border-radius: 99px;
+      background: #eff3fa;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .c1 { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+    .c2 { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+    .c3 { background: linear-gradient(90deg, #6366f1, #818cf8); }
+
+    .log {
+      padding: 0 16px 16px;
+      max-height: 255px;
+      overflow: auto;
+    }
+
+    .log-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 10px;
+      background: #fcfdff;
+    }
+
+    .log-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      padding: 12px 16px 16px;
+    }
+
+    .day {
+      background: #fbfcff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .day .d {
+      font-size: 0.75rem;
+      color: var(--sub);
+    }
+
+    .day .v {
+      margin-top: 6px;
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    .hint {
+      padding: 0 16px 16px;
+      color: var(--sub);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 1030px) {
+      .metrics {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 14px;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero-actions {
+        justify-content: flex-start;
+      }
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel hero">
+      <div>
+        <h1 class="title">花屋さん マルチモール販売集計デモ</h1>
+        <p class="subtitle">
+          ヤフオク・メルカリ・ラクマの販売結果を、登録済みログイン情報で自動取得した想定のUIデモです。
+          手入力の日報なしで、どこで何が売れたかを一覧と集計で確認できます。
+        </p>
+        <div class="status-line">
+          <span class="chip ok" id="syncStatus">同期状態: 正常</span>
+          <span class="chip info" id="lastSyncText">最終同期: --</span>
+          <span class="chip warn" id="alertChip">アラート: 在庫僅少 0件</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-primary" id="syncBtn">販売実績を自動同期</button>
+        <button class="btn-ghost" id="simulateBtn">データを再シミュレート</button>
+        <button class="btn-neutral" id="resetBtn">サンプル初期化</button>
+      </div>
+    </section>
+
+    <section class="panel metrics" id="metrics"></section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">商品別販売一覧</h2>
+            <p class="section-note">どのモールで売れたか、在庫がどれだけ残っているかを一目で確認</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>商品名</th>
+                <th>カテゴリ</th>
+                <th>主な販売先</th>
+                <th>本日販売数</th>
+                <th>売上</th>
+                <th>残在庫</th>
+              </tr>
+            </thead>
+            <tbody id="productBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <aside class="side">
+        <section class="panel chart-card">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">モール別売上比率</h2>
+              <p class="section-note">自動読込した本日の販売実績</p>
+            </div>
+          </div>
+          <div class="bars" id="siteBars"></div>
+        </section>
+
+        <section class="panel chart-card">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">直近7日 売上推移</h2>
+              <p class="section-note">日次の売上イメージ</p>
+            </div>
+          </div>
+          <div class="timeline" id="timeline"></div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">自動取得ログ</h2>
+          <p class="section-note">モールへの接続から販売結果取り込みまでの処理ログ（サンプル）</p>
+        </div>
+      </div>
+      <div class="log" id="logList"></div>
+      <div class="hint">
+        ※このデモはフロントのみで動作し、外部サイトへの実際のログインは行いません。
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const initialProducts = [
+      { id: "P-001", name: "季節の花束（M）", category: "花束", site: "ヤフオク", sold: 6, revenue: 17800, stock: 8 },
+      { id: "P-002", name: "バラのアレンジメント", category: "アレンジ", site: "メルカリ", sold: 4, revenue: 15200, stock: 5 },
+      { id: "P-003", name: "ミニ胡蝶蘭", category: "鉢花", site: "ラクマ", sold: 3, revenue: 12600, stock: 2 },
+      { id: "P-004", name: "お供え花セット", category: "用途別", site: "ヤフオク", sold: 5, revenue: 14300, stock: 7 },
+      { id: "P-005", name: "ドライフラワーリース", category: "雑貨", site: "メルカリ", sold: 7, revenue: 18900, stock: 4 },
+      { id: "P-006", name: "観葉植物スターター", category: "観葉植物", site: "ラクマ", sold: 2, revenue: 8400, stock: 10 }
+    ];
+
+    const siteNames = ["ヤフオク", "メルカリ", "ラクマ"];
+    const siteClass = { "ヤフオク": "site-yahoo", "メルカリ": "site-mercari", "ラクマ": "site-rakuma" };
+    const siteColorClass = { "ヤフオク": "c1", "メルカリ": "c2", "ラクマ": "c3" };
+    let products = structuredClone(initialProducts);
+    let logs = [];
+
+    function yen(value) {
+      return "¥" + value.toLocaleString("ja-JP");
+    }
+
+    function nowText() {
+      const d = new Date();
+      return d.toLocaleString("ja-JP", { hour12: false });
+    }
+
+    function pushLog(level, message, detail) {
+      logs.unshift({
+        time: nowText(),
+        level,
+        message,
+        detail
+      });
+      logs = logs.slice(0, 12);
+      renderLogs();
+    }
+
+    function calcData() {
+      const totalRevenue = products.reduce((s, p) => s + p.revenue, 0);
+      const totalSold = products.reduce((s, p) => s + p.sold, 0);
+      const lowStock = products.filter((p) => p.stock <= 3).length;
+      const avgPrice = totalSold ? Math.round(totalRevenue / totalSold) : 0;
+
+      const bySite = siteNames.map((site) => {
+        const revenue = products
+          .filter((p) => p.site === site)
+          .reduce((s, p) => s + p.revenue, 0);
+        return { site, revenue };
+      });
+
+      return { totalRevenue, totalSold, lowStock, avgPrice, bySite };
+    }
+
+    function renderMetrics() {
+      const d = calcData();
+      const metrics = document.getElementById("metrics");
+      metrics.innerHTML = `
+        <div class="metric">
+          <div class="label">本日売上</div>
+          <div class="value">${yen(d.totalRevenue)}</div>
+          <div class="delta up">前日比 +8.4%</div>
+        </div>
+        <div class="metric">
+          <div class="label">販売件数</div>
+          <div class="value">${d.totalSold} 件</div>
+          <div class="delta up">自動読込で更新</div>
+        </div>
+        <div class="metric">
+          <div class="label">平均単価</div>
+          <div class="value">${yen(d.avgPrice)}</div>
+          <div class="delta flat">モール横断平均</div>
+        </div>
+        <div class="metric">
+          <div class="label">在庫僅少商品</div>
+          <div class="value">${d.lowStock} 点</div>
+          <div class="delta ${d.lowStock > 0 ? "up" : "flat"}">${d.lowStock > 0 ? "要補充アラート" : "在庫に余裕あり"}</div>
+        </div>
+      `;
+      document.getElementById("alertChip").textContent = `アラート: 在庫僅少 ${d.lowStock}件`;
+    }
+
+    function renderProducts() {
+      const tbody = document.getElementById("productBody");
+      tbody.innerHTML = products
+        .map((p) => `
+          <tr>
+            <td>${p.name}</td>
+            <td>${p.category}</td>
+            <td><span class="badge ${siteClass[p.site]}">${p.site}</span></td>
+            <td>${p.sold} 件</td>
+            <td>${yen(p.revenue)}</td>
+            <td class="${p.stock <= 3 ? "stock-low" : "stock-ok"}">${p.stock} 点</td>
+          </tr>
+        `)
+        .join("");
+    }
+
+    function renderSiteBars() {
+      const d = calcData();
+      const max = Math.max(...d.bySite.map((x) => x.revenue), 1);
+      const el = document.getElementById("siteBars");
+      el.innerHTML = d.bySite
+        .map((x) => {
+          const width = Math.round((x.revenue / max) * 100);
+          return `
+            <div class="bar-row">
+              <div>${x.site}</div>
+              <div class="bar-track">
+                <div class="bar-fill ${siteColorClass[x.site]}" style="width:${width}%"></div>
+              </div>
+              <strong>${yen(x.revenue)}</strong>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderTimeline() {
+      const base = calcData().totalRevenue;
+      const data = Array.from({ length: 7 }).map((_, idx) => {
+        const ratio = 0.74 + (idx * 0.045) + (Math.sin(idx * 2) * 0.03);
+        return Math.round(base * ratio);
+      });
+      const labels = ["月", "火", "水", "木", "金", "土", "日"];
+      const el = document.getElementById("timeline");
+      el.innerHTML = data
+        .map((v, i) => `
+          <div class="day">
+            <div class="d">${labels[i]}</div>
+            <div class="v">${Math.round(v / 1000)}k</div>
+          </div>
+        `)
+        .join("");
+    }
+
+    function renderLogs() {
+      const logList = document.getElementById("logList");
+      logList.innerHTML = logs
+        .map((l) => `
+          <div class="log-item">
+            <div class="log-top">
+              <span>${l.time}</span>
+              <span>${l.level}</span>
+            </div>
+            <div>${l.message}</div>
+            <div style="margin-top:4px;color:#64748b;font-size:0.83rem;">${l.detail}</div>
+          </div>
+        `)
+        .join("");
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderProducts();
+      renderSiteBars();
+      renderTimeline();
+      document.getElementById("lastSyncText").textContent = `最終同期: ${nowText()}`;
+    }
+
+    function simulateSync() {
+      const syncBtn = document.getElementById("syncBtn");
+      const syncStatus = document.getElementById("syncStatus");
+      syncBtn.disabled = true;
+      syncBtn.textContent = "同期中...";
+      syncStatus.textContent = "同期状態: 実行中";
+      syncStatus.className = "chip info";
+
+      const steps = [
+        ["INFO", "ヤフオクAPIへ接続", "保存済みアカウントで認証しました"],
+        ["INFO", "メルカリ販売結果を取得", "本日注文データを3件検出"],
+        ["INFO", "ラクマ販売結果を取得", "在庫更新対象を2件検出"],
+        ["OK", "商品マスタへ反映", "売上・在庫の自動集計を完了しました"]
+      ];
+
+      let i = 0;
+      const timer = setInterval(() => {
+        const [lv, msg, detail] = steps[i];
+        pushLog(lv, msg, detail);
+        i += 1;
+        if (i >= steps.length) {
+          clearInterval(timer);
+          products = products.map((p) => {
+            const soldAdd = Math.floor(Math.random() * 3);
+            const price = Math.max(1200, Math.round(p.revenue / Math.max(1, p.sold)));
+            return {
+              ...p,
+              sold: p.sold + soldAdd,
+              revenue: p.revenue + soldAdd * price,
+              stock: Math.max(0, p.stock - soldAdd)
+            };
+          });
+          renderAll();
+          syncBtn.disabled = false;
+          syncBtn.textContent = "販売実績を自動同期";
+          syncStatus.textContent = "同期状態: 正常";
+          syncStatus.className = "chip ok";
+        }
+      }, 600);
+    }
+
+    function reseedData() {
+      products = products.map((p) => {
+        const drift = Math.floor(Math.random() * 5) - 2;
+        const revenueDrift = drift * (900 + Math.floor(Math.random() * 700));
+        return {
+          ...p,
+          sold: Math.max(1, p.sold + drift),
+          revenue: Math.max(3200, p.revenue + revenueDrift),
+          stock: Math.max(0, p.stock - Math.max(0, drift))
+        };
+      });
+      pushLog("INFO", "データ再シミュレート", "サンプル販売データを再生成しました");
+      renderAll();
+    }
+
+    function resetDemo() {
+      products = structuredClone(initialProducts);
+      logs = [];
+      pushLog("INFO", "デモ初期化", "初期サンプルデータを読み込みました");
+      renderAll();
+    }
+
+    document.getElementById("syncBtn").addEventListener("click", simulateSync);
+    document.getElementById("simulateBtn").addEventListener("click", reseedData);
+    document.getElementById("resetBtn").addEventListener("click", resetDemo);
+
+    pushLog("INFO", "初期データを表示", "サンプル商品6件を読み込みました");
+    renderAll();
+  </script>
+</body>
+</html>
